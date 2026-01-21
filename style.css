@@ -1,0 +1,50 @@
+body {
+    box-sizing: border-box;
+  }
+  
+  .font-display { font-family: 'Playfair Display', serif; }
+  .font-body { font-family: 'DM Sans', sans-serif; }
+  
+  .invoice-gradient {
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+  }
+  
+  .card-glass {
+    background: rgba(255,255,255,0.97);
+  }
+  
+  .btn-primary {
+    background: linear-gradient(135deg, #e94560, #ff6b6b);
+    transition: 0.3s;
+  }
+  
+  .btn-primary:hover { transform: translateY(-2px); }
+  
+  .btn-secondary {
+    border: 1px solid #cbd5e1;
+  }
+  
+  input, select {
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    padding: 0.3rem 0.4rem;
+  }
+  
+  table th, table td {
+    padding: 0.5rem;
+  }
+  
+  .total-highlight {
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+  }
+  
+  @media print {
+    .no-print { display: none !important; }
+  }
+  
+  input:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  
+  

@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Restaurant – Invoice</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body class="h-full font-body invoice-gradient">
+<div class="p-4 md:p-8 max-w-5xl mx-auto">
+
+  <header class="text-center mb-8">
+    <h1 class="font-display text-4xl text-white">My Restaurant</h1>
+    <p class="text-white/60">Invoice Generator</p>
+  </header>
+
+  <div class="card-glass rounded-3xl overflow-hidden">
+
+    <!-- Invoice meta -->
+    <div class="bg-slate-100 px-6 py-4 border-b flex justify-between">
+      <div>
+        <p class="text-xs text-slate-500">Invoice Date</p>
+        <p id="invoice-date"></p>
+      </div>
+      <div class="text-right">
+        <p class="text-xs text-slate-500">Invoice #</p>
+        <p id="invoice-number"></p>
+      </div>
+    </div>
+
+    <!-- Items -->
+    <div class="p-6 overflow-x-auto">
+      <table class="w-full text-sm border-collapse">
+        <thead>
+          <tr class="text-left border-b">
+            <th>Item</th>
+            <th>Type</th>
+            <th>Qty</th>
+            <th>Net (€)</th>
+            <th>Tax %</th>
+            <th>Tax (€)</th>
+            <th>Gross (€)</th>
+            <th class="no-print"></th>
+          </tr>
+        </thead>
+        <tbody id="items-container"></tbody>
+      </table>
+
+      <button id="add-item-btn"
+        class="btn-primary text-white px-4 py-2 rounded-full mt-4">
+        + Add Item
+      </button>
+
+      <!-- Additional Charges -->
+      <div class="no-print mt-6 p-4 bg-slate-50 rounded-xl">
+        <h3 class="font-display text-lg mb-3">Additional Charges</h3>
+        <div class="no-print mt-3 p-3 bg-white/10 rounded-xl space-y-2">
+
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
+            <!-- Description -->
+            <input
+              id="extra-desc"
+              type="text"
+              placeholder="Decor, Venue, Packaging"
+              class="input-field px-3 py-2 rounded-lg border border-slate-200 w-full"
+            />
+        
+            <!-- Discount checkbox -->
+            <label class="flex items-center gap-2 text-sm">
+              <input type="checkbox" id="extra-discount" />
+              Discount
+            </label>
+        
+            <!-- Amount -->
+            <input
+              id="extra-amount"
+              type="number"
+              min="0"
+              step="0.01"
+              placeholder="Amount (€)"
+              class="input-field px-3 py-2 rounded-lg border border-slate-200 w-full"
+            />
+        
+            <!-- Hint -->
+            <span class="text-xs text-white/70">
+              This amount is automatically added to Grand Total
+            </span>
+          </div>
+        </div>
+
+        <!-- Tip Amount -->
+        <h4 class="font-semibold text-sm text-slate-600 mb-2">Tip (Optional)</h4>      
+        <div class="flex gap-2 mb-2">
+          <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="10">10%</button>
+          <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="15">15%</button>
+          <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="20">20%</button>
+          <input type="number" id="tip-input" placeholder="Enter Tip%" min="0" class="input-field w-32 px-3 py-2 rounded-lg border border-slate-200">
+          
+    </div>
+
+    <!-- Totals -->
+    <div class="total-highlight text-white p-6 space-y-2">
+      <div class="grid grid-cols-3 items-center text-white/80">
+        <span>Food</span>
+        <span class="text-center">Net: <span id="total-net-food">€0.00</span></span>
+        <span class="text-right">Tax: <span id="total-tax-food">€0.00</span></span>
+      </div>
+      
+      <div class="grid grid-cols-3 items-center text-white/80">
+        <span>Drinks</span>
+        <span class="text-center">Net: <span id="total-net-drink">€0.00</span></span>
+        <span class="text-right">Tax: <span id="total-tax-drink">€0.00</span></span>
+      </div>
+      
+      <div class="grid grid-cols-3 items-center text-white/80">
+        <span class="font-semibold">Totals</span>
+        <span class="text-center font-semibold">Net: <span id="total-net">€0.00</span></span>
+        <span class="text-right font-semibold">Tax: <span id="total-tax">€0.00</span></span>
+      </div>
+
+      <div class="border-t pt-3 flex justify-between text-xl font-display">
+        <span>Grand Total</span><span id="grand-total">€0.00</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="no-print bg-slate-50 p-6 flex justify-center gap-3">
+      <button id="clear-btn" class="btn-secondary px-6 py-2 rounded-xl">Clear</button>
+      <button id="print-btn" class="btn-primary text-white px-6 py-2 rounded-xl">Print / PDF</button>
+    </div>
+
+  </div>
+
+  <p class="text-center text-white/40 text-xs mt-4">
+    ⚠ Please verify invoice number before generating PDF.
+  </p>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
+
