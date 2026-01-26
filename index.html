@@ -1,5 +1,6 @@
 <!doctype html>
 <html lang="en" class="h-full">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,141 +8,322 @@
 
   <script src="https://cdn.tailwindcss.com"></script>
 
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap"
+    rel="stylesheet" />
   <link rel="stylesheet" href="style.css" />
 </head>
 
 <body class="h-full font-body invoice-gradient">
-<div class="p-4 md:p-8 max-w-5xl mx-auto">
 
-  <header class="text-center mb-8">
-    <h1 class="font-display text-4xl text-white">My Restaurant</h1>
-    <p class="text-white/60">Invoice Generator</p>
-  </header>
+  <div class="p-4 md:p-8 max-w-5xl mx-auto">
 
-  <div class="card-glass rounded-3xl overflow-hidden">
-
-    <!-- Invoice meta -->
-    <div class="bg-slate-100 px-6 py-4 border-b flex justify-between">
-      <div>
-        <p class="text-xs text-slate-500">Invoice Date</p>
-        <p id="invoice-date"></p>
+    <!-- HEADER -->
+    <header class="relative text-center mb-8">
+      <div class="absolute top-4 right-4 no-print">
+        <select title="Select Language" onchange="setLanguage(this.value)"
+          class="bg-white text-slate-800 text-sm px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+          <option value="en">EN</option>
+          <option value="de">DE</option>
+        </select>
       </div>
-      <div class="text-right">
-        <p class="text-xs text-slate-500">Invoice #</p>
-        <p id="invoice-number"></p>
-      </div>
-    </div>
 
-    <!-- Items -->
-    <div class="p-6 overflow-x-auto">
-      <table class="w-full text-sm border-collapse">
-        <thead>
-          <tr class="text-left border-b">
-            <th>Item</th>
-            <th>Type</th>
-            <th>Qty</th>
-            <th>Net (€)</th>
-            <th>Tax %</th>
-            <th>Tax (€)</th>
-            <th>Gross (€)</th>
-            <th class="no-print"></th>
-          </tr>
-        </thead>
-        <tbody id="items-container"></tbody>
-      </table>
+      <h1 class="font-display text-4xl text-white" data-i18n="title">My Restaurant</h1>
+      <p class="text-white/60" data-i18n="subtitle">Invoice Generator</p>
+    </header>
 
-      <button id="add-item-btn"
-        class="btn-primary text-white px-4 py-2 rounded-full mt-4">
-        + Add Item
-      </button>
+    <!-- MAIN CARD -->
+    <div class="card-glass rounded-3xl overflow-hidden max-w-8xl mx-auto">
 
-      <!-- Additional Charges -->
-      <div class="no-print mt-6 p-4 bg-slate-50 rounded-xl">
-        <h3 class="font-display text-lg mb-3">Additional Charges</h3>
-        <div class="no-print mt-3 p-3 bg-white/10 rounded-xl space-y-2">
+      <!-- INVOICE HEADER (Professional Layout + Editable Fields) -->
+      <div class="p-8 bg-white border-b">
 
-          <div class="grid grid-cols-1 md:grid-cols-4 gap-3 items-center">
-            <!-- Description -->
-            <input
-              id="extra-desc"
-              type="text"
-              placeholder="Decor, Venue, Packaging"
-              class="input-field px-3 py-2 rounded-lg border border-slate-200 w-full"
-            />
-        
-            <!-- Discount checkbox -->
-            <label class="flex items-center gap-2 text-sm">
-              <input type="checkbox" id="extra-discount" />
-              Discount
-            </label>
-        
-            <!-- Amount -->
-            <input
-              id="extra-amount"
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="Amount (€)"
-              class="input-field px-3 py-2 rounded-lg border border-slate-200 w-full"
-            />
-        
-            <!-- Hint -->
-            <span class="text-xs text-white/70">
-              This amount is automatically added to Grand Total
-            </span>
+        <!-- Sender (Top Right) -->
+        <div class="flex justify-end">
+          <div class="w-full md:w-[200px] space-y-2">
+
+            <input id="company-name" type="text" placeholder="Company Name"
+              class="invoice-input text-right font-semibold text-lg" />
+
+            <input id="company-address" type="text" placeholder="Street, ZIP City" class="invoice-input text-right" />
+
+            <div class="pt-2 space-y-2">
+              <input id="restaurant-brand" type="text" placeholder="Restaurant Name"
+                class="invoice-input text-right font-semibold" />
+
+              <input id="restaurant-branch-address" type="text" placeholder="Branch Address"
+                class="invoice-input text-right" />
+
+              <div class="flex justify-end items-center gap-2">
+
+                <input id="email" type="email" placeholder="Email" class="invoice-input text-right w-[180px]" />
+
+                <span class="email-phone-separator">|</span>
+
+                <input id="phone" type="text" placeholder="Phone" class="invoice-input text-right w-[160px]" />
+
+              </div>
+            </div>
+
           </div>
         </div>
 
-        <!-- Tip Amount -->
-        <h4 class="font-semibold text-sm text-slate-600 mb-2">Tip (Optional)</h4>      
-        <div class="flex gap-2 mb-2">
+        <!-- Receiver (Left) + Invoice Meta (Right) And Same Row -->
+        <div class="invoice-meta-grid mt-8 grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-10 items-start">
+
+          <!-- Receiver (LEFT)-->
+          <div>
+            <h4 class="text-base font-semibold text-slate-900 mb-2" data-i18n="receiverTitle">
+              Receiver
+            </h4>
+
+            <div class="flex flex-col gap-2">
+              <input id="receiver-name" type="text" placeholder="Receiver Name" class="invoice-input" />
+
+              <textarea id="receiver-address" rows="4" placeholder="Receiver Address"
+                class="invoice-input resize-none"></textarea>
+            </div>
+          </div>
+          <!-- Invoice Meta -->
+          <div class="md:text-right">
+            <h4 class="text-base font-semibold text-slate-900 mb-2" data-i18n="invoiceTitle">
+              Invoice
+            </h4>
+
+            <div class="space-y-2">
+
+              <div class="grid grid-cols-[160px_1fr] gap-3 items-center">
+                <span class="text-sm text-slate-600 font-medium" data-i18n="invoiceNumberLabel">Invoice No.
+                </span>
+                <input id="invoice-number-input" class="invoice-input text-right" title="Enter Invoice Number"
+                  placeholder="Invoice Number" />
+              </div>
+
+              <div class="grid grid-cols-[160px_1fr] gap-3 items-center">
+                <span class="text-sm text-slate-600 font-medium" data-i18n="invoiceDateLabel">Invoice Date
+                </span>
+                <input id="invoice-date-input" type="text" placeholder="DD.MM.YYYY" class="invoice-input text-right" />
+              </div>
+
+              <div class="grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-3 items-center">
+                <span class="text-sm text-slate-600 font-medium" data-i18n="serviceDateLabel">
+                  Service Date
+                </span>
+                <input id="service-date-input" type="text" placeholder="DD.MM.YYYY" class="invoice-input text-right" />
+              </div>
+
+              <div class="grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-3 items-center">
+                <span class="text-sm text-slate-600 font-medium" data-i18n="reasonLabel">
+                  Reason
+                </span>
+                <input id="reason-input" type="text" placeholder="Christmas Celebration"
+                  class="invoice-input text-right" />
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- ITEMS -->
+      <div class="p-6 overflow-x-auto bg-transparent">
+        <table class="w-full text-sm border-collapse">
+          <thead>
+            <tr class="text-left border-b">
+              <th data-i18n="item">Item</th>
+              <th data-i18n="type">Type</th>
+              <th data-i18n="qty">Qty</th>
+              <th data-i18n="netUnit">Net Unit Price (€)</th>
+              <th data-i18n="tax">Tax %</th>
+              <th data-i18n="taxAmount">Tax (€)</th>
+              <th data-i18n="gross">Gross Price (€)</th>
+              <th class="no-print"></th>
+            </tr>
+          </thead>
+          <tbody id="items-container"></tbody>
+        </table>
+
+        <button id="add-item-btn" type="button" class="btn-primary text-white px-4 py-2 rounded-full mt-6"
+          data-i18n="addItem">
+          + Add Item
+        </button>
+
+        <!-- Additional Charges -->
+        <div id="additional-charges-section">
+
+          <div class="flex items-baseline gap-2 mb-3">
+            <h3 class="font-display text-lg mt-6" data-i18n="additionalCharges" >
+              Additional Charges
+            </h3>
+
+            <span class="charges-hint" data-i18n="extraHint">
+              (This amount is automatically added to Grand Total)
+            </span>
+          </div>
+
+
+          <!-- Show this only when empty (JS will control it) -->
+          <p id="no-additional-charges" class="text-sm text-slate-500 mt-3 hidden" data-i18n="noAdditionalCharges">
+            No Additional Charges
+          </p>
+
+          <div id="additional-charges-fields" class="grid grid-cols-1 md:grid-cols-12 gap-3 items-center mt-3">
+            <div class="md:col-span-5">
+              <label class="text-xs text-slate-600 font-medium block mb-1" data-i18n="chargeDescription">
+                Charge Description
+              </label>
+              <input id="extra-desc" type="text" placeholder="Decor, Venue, Packaging" data-i18n-placeholder="extraDesc"
+                class="invoice-input" />
+            </div>
+
+            <!-- Discount checkbox -->
+            <div id="discount-print-wrapper" class="md:col-span-2 flex items-end">
+              <label class="flex items-center gap-2 text-sm mt-5">
+                <input type="checkbox" id="extra-discount" />
+                <span data-i18n="discount">Discount</span>
+              </label>
+            </div>
+
+            <!-- Amount -->
+            <div class="md:col-span-5">
+              <label class="text-xs text-slate-600 font-medium block mb-1" data-i18n="chargeAmount">
+                Amount (€)
+              </label>
+              <input id="extra-amount" type="number" min="0" step="0.01" placeholder="0.00 (€)"
+                data-i18n-placeholder="amount" class="invoice-input" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Tip Amount -->        
+        <h4 class="font-semibold text-sm text-slate-600 mb-2 mt-4" data-i18n="tipOptional">
+          Tip (Optional)
+        </h4>
+
+        <div class="flex items-center gap-2 mb-2 flex-nowrap">
+
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="10">10%</button>
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="15">15%</button>
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="20">20%</button>
-          <input type="number" id="tip-input" placeholder="Enter Tip%" min="0" class="input-field w-32 px-3 py-2 rounded-lg border border-slate-200">
-          
-    </div>
-
-    <!-- Totals -->
-    <div class="total-highlight text-white p-6 space-y-2">
-      <div class="grid grid-cols-3 items-center text-white/80">
-        <span>Food</span>
-        <span class="text-center">Net: <span id="total-net-food">€0.00</span></span>
-        <span class="text-right">Tax: <span id="total-tax-food">€0.00</span></span>
-      </div>
-      
-      <div class="grid grid-cols-3 items-center text-white/80">
-        <span>Drinks</span>
-        <span class="text-center">Net: <span id="total-net-drink">€0.00</span></span>
-        <span class="text-right">Tax: <span id="total-tax-drink">€0.00</span></span>
-      </div>
-      
-      <div class="grid grid-cols-3 items-center text-white/80">
-        <span class="font-semibold">Totals</span>
-        <span class="text-center font-semibold">Net: <span id="total-net">€0.00</span></span>
-        <span class="text-right font-semibold">Tax: <span id="total-tax">€0.00</span></span>
+        
+          <input
+            type="number"
+            id="tip-input"
+            min="0.00"
+            placeholder="Enter Custom Tip Amount"
+            data-i18n-placeholder="enterTip"
+            class="w-28 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm
+                   focus:outline-none focus:ring-2 focus:ring-slate-200 w-[220px]"
+          />
+        
+          <!-- ✅ Tip amount on the SAME line -->
+          <span
+            id="tip-amount-display"
+            class="ml-56 text-sm font-semibold text-slate-700 gap-3 whitespace-nowrap"
+          >
+             0.00 (€)
+          </span>
+        
+        </div>
       </div>
 
-      <div class="border-t pt-3 flex justify-between text-xl font-display">
-        <span>Grand Total</span><span id="grand-total">€0.00</span>
-      </div>
-    </div>
+      <!-- TOTALS -->
+      <div class="total-highlight text-white p-6 space-y-2">
 
-    <!-- Actions -->
-    <div class="no-print bg-slate-50 p-6 flex justify-center gap-3">
-      <button id="clear-btn" class="btn-secondary px-6 py-2 rounded-xl">Clear</button>
-      <button id="print-btn" class="btn-primary text-white px-6 py-2 rounded-xl">Print / PDF</button>
+        <div class="grid grid-cols-3 items-center text-white/80">
+          <span data-i18n="food">Food</span>
+          <span class="text-center">
+            <span data-i18n="net">Net</span>: <span id="total-net-food">0</span>
+          </span>
+          <span class="text-right">
+            <span data-i18n="tax">Tax</span>: <span id="total-tax-food">0</span>
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 items-center text-white/80">
+          <span data-i18n="drinks">Drinks</span>
+          <span class="text-center">
+            <span data-i18n="net">Net</span>: <span id="total-net-drink">0</span>
+          </span>
+          <span class="text-right">
+            <span data-i18n="tax">Tax</span>: <span id="total-tax-drink">0</span>
+          </span>
+        </div>
+
+        <div class="grid grid-cols-3 items-center text-white/80">
+          <span class="font-semibold" data-i18n="totals">Totals</span>
+          <span class="text-center font-semibold">
+            <span data-i18n="net">Net</span>: <span id="total-net">0</span>
+          </span>
+          <span class="text-right font-semibold">
+            <span data-i18n="tax">Tax</span>: <span id="total-tax">0</span>
+          </span>
+        </div>
+
+        <div class="pt-4 flex justify-between text-xl font-display border-t border-white/20">
+          <span data-i18n="grandTotal">Grand Total</span>
+          <span class="text-white/70 text-sm font-normal" data-i18n="grandTotalNote">
+            //(Gesamt Netto + Tips + Additional Charges)
+          </span>
+          <span id="grand-total">0</span>
+        </div>
+      </div>
+
+      <!-- Invoice Notes & Legal Info -->
+      <div class="bg-slate-50 p-6 space-y-5">
+
+        <!-- Note --> 
+        <div>
+          <label data-i18n="noteLabel" class="block text-sm font-medium text-slate-700 mb-4">
+            Note
+          </label>
+          <textarea id="invoice-note" rows="5" data-i18n-placeholder="notePlaceholder"
+            placeholder="Please make the payment within 7 days." class="invoice-input resize-none"></textarea>
+        </div>
+
+        <!-- Transfer Details -->
+        <div class="print-section transfer-section">
+          <label data-i18n="transferDetailsLabel" class="block text-sm font-medium text-slate-700 mb-1">
+            Transfer Details
+          </label>
+          <textarea id="transfer-details" rows="5" data-i18n-placeholder="transferDetailsPlaceholder"
+            placeholder="Bank name, IBAN, BIC, payment terms" class="invoice-input resize-none"></textarea>
+        </div>
+
+        <!-- Sender Tax Information -->
+        <div class="print-section tax-section">
+          <label data-i18n="senderTaxInfoLabel" class="block text-sm font-medium text-slate-700 mb-1">
+            Sender Tax Information
+          </label>
+
+          <textarea id="sender-tax-info" rows="4" data-i18n-placeholder="senderTaxInfoPlaceholder"
+            placeholder="VAT ID, Tax number, registration info" class="invoice-input resize-none">
+  </textarea>
+
+        </div>
+
+        <!-- ACTIONS -->
+        <div class="no-print bg-slate-50 p-6 flex justify-center gap-3">
+          <button id="clear-btn" class="btn-secondary px-6 py-2 rounded-xl" data-i18n="clear">
+            Clear
+          </button>
+          <button id="print-btn" class="btn-primary text-white px-6 py-2 rounded-xl" data-i18n="print">
+            Print / PDF
+          </button>
+        </div>
+      </div>
     </div>
 
   </div>
 
-  <p class="text-center text-white/40 text-xs mt-4">
+  <p class="text-center text-white/40 text-xs mt-4" data-i18n="verifyNote">
     ⚠ Please verify invoice number before generating PDF.
   </p>
-</div>
+  </div>
 
-<script src="script.js"></script>
+  <script src="i18n.js"></script>
+  <script src="script.js"></script>
 </body>
-</html>
 
+</html>

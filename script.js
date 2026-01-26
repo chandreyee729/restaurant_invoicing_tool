@@ -1,23 +1,38 @@
-const currency = "€";
+let currentLang = "en"; // default language
 let items = [];
 let idCounter = 0;
-let tipPercent = 0;
+let tipPercent = null;
 let extraAmount = 0;
 let isDiscount = false;
 
+const languageSwitch = document.getElementById("language-switch");
 
-// Initialize invoice
+if (languageSwitch) {
+  languageSwitch.addEventListener("change", e => {
+    currentLang = e.target.value;
+    applyLanguage(currentLang);
+    recalc();
+  });
+}
+// Initialize function for invoice date and number
 function initInvoice() {
   const now = new Date();
-  document.getElementById("invoice-date").textContent =
+  document.getElementById("invoice-date-input").placeholder =
     now.toLocaleDateString("de-DE");
-  document.getElementById("invoice-number").textContent =
+  document.getElementById("invoice-number-input").textContent =
     "DK-" + now.getTime().toString().slice(-6);
 }
 
 // Format currency
-function format(v) {
-  return currency + v.toFixed(2);
+function formatCurrency(value) {
+  const locale = currentLang === "de" ? "de-DE" : "en-GB";
+
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: "EUR",
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2
+  }).format(Number(value) || 0);
 }
 
 // Determine tax by item type
@@ -45,25 +60,42 @@ function recalc() {
       totalTaxDrink += taxAmount;
     }
   });
-
   const totalNet = totalNetFood + totalNetDrink;
   const totalTax = totalTaxFood + totalTaxDrink;
   const subtotal = totalNet + totalTax;
-  const tipAmount = (tipPercent / 100) * subtotal;
-  const appliedExtra = isDiscount ? 0 : extraAmount;
-  const grandTotal = subtotal + tipAmount + appliedExtra;
 
-  // Update totals in HTML
-  document.getElementById("total-net-food").textContent = format(totalNetFood);
-  document.getElementById("total-tax-food").textContent = format(totalTaxFood);
-  document.getElementById("total-net-drink").textContent = format(totalNetDrink);
-  document.getElementById("total-tax-drink").textContent = format(totalTaxDrink);
-  document.getElementById("total-net").textContent = format(totalNet);
-  document.getElementById("total-tax").textContent = format(totalTax);
-  document.getElementById("grand-total").textContent = format(grandTotal);
+  // TIP calculation
+  let tipAmount = 0;
+  const manualTip = parseFloat(tipInput?.value);
+
+  if (!isNaN(manualTip)) {
+    tipAmount = manualTip;
+  } else if (tipPercent !== null) {
+    tipAmount = (tipPercent / 100) * subtotal;
+  }
+
+  // Update tip display
+  const tipAmountEl = document.getElementById("tip-amount-display");
+  if (tipAmountEl) {
+    tipAmountEl.textContent = formatCurrency(tipAmount);
+  }
+
+
+
+const appliedExtra = isDiscount ? 0 : extraAmount;
+const grandTotal = subtotal + tipAmount + appliedExtra;
+
+// Update totals in HTML
+document.getElementById("total-net-food").textContent = formatCurrency(totalNetFood);
+document.getElementById("total-tax-food").textContent = formatCurrency(totalTaxFood);
+document.getElementById("total-net-drink").textContent = formatCurrency(totalNetDrink);
+document.getElementById("total-tax-drink").textContent = formatCurrency(totalTaxDrink);
+document.getElementById("total-net").textContent = formatCurrency(totalNet);
+document.getElementById("total-tax").textContent = formatCurrency(totalTax);
+document.getElementById("grand-total").textContent = formatCurrency(grandTotal);
 }
 
-// Add a new item row
+// Add a new item row to the invoice
 function addItem() {
   const item = {
     id: ++idCounter,
@@ -76,7 +108,6 @@ function addItem() {
   items.push(item);
 
   const row = document.createElement("tr");
-
   row.innerHTML = `
     <td><input placeholder="Item Name" class="item-name"></td>
     <td>
@@ -86,7 +117,7 @@ function addItem() {
       </select>
     </td>
     <td><input type="number" value="1" class="qty w-16"></td>
-    <td><input type="number" value="0" class="net w-24"></td>
+    <td><input type="number" value="0.00" class="net w-24"></td>
     <td class="tax text-center">7%</td>
     <td class="taxValue">€0.00</td>
     <td class="gross">€0.00</td>
@@ -97,9 +128,11 @@ function addItem() {
   const taxCell = row.querySelector(".tax");
   const taxValueCell = row.querySelector(".taxValue");
   const grossCell = row.querySelector(".gross");
+  const grossInput = row.querySelector(".gross");
+
 
   // Update item and totals
-  function update() {
+  function grossFromNet() {
     item.name = nameInput.value;
     item.qty = +qtyInput.value || 1;
     item.net = +netInput.value || 0;
@@ -110,17 +143,16 @@ function addItem() {
     const gross = item.qty * item.net + taxAmount;
 
     taxCell.textContent = item.tax + "%";
-    taxValueCell.textContent = format(taxAmount);
-    grossCell.textContent = format(gross);
-
+    taxValueCell.textContent = formatCurrency(taxAmount);
+    grossCell.textContent = formatCurrency(gross);
     recalc();
   }
 
   // Event listeners
-  nameInput.addEventListener("input", update);
-  qtyInput.addEventListener("input", update);
-  netInput.addEventListener("input", update);
-  typeSelect.addEventListener("change", update);
+  nameInput.addEventListener("input", grossFromNet);
+  qtyInput.addEventListener("input", grossFromNet);
+  netInput.addEventListener("input", grossFromNet);
+  typeSelect.addEventListener("change", grossFromNet);
 
   // Remove button
   row.querySelector(".remove-btn").onclick = () => {
@@ -128,17 +160,25 @@ function addItem() {
     row.remove();
     recalc();
   };
-
   document.getElementById("items-container").appendChild(row);
-  update();
+  grossFromNet();
 }
 
 // Tip buttons
 document.querySelectorAll(".tip-btn").forEach(btn => {
   btn.addEventListener("click", () => {
+    // set percentage
     tipPercent = +btn.dataset.tip || 0;
+
+    // clear manual input
     const tipInput = document.getElementById("tip-input");
-    if (tipInput) tipInput.value = tipPercent;
+    if (tipInput) tipInput.value = "";
+
+    // highlight active button
+    document.querySelectorAll(".tip-btn")
+      .forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+
     recalc();
   });
 });
@@ -147,60 +187,160 @@ document.querySelectorAll(".tip-btn").forEach(btn => {
 const tipInput = document.getElementById("tip-input");
 if (tipInput) {
   tipInput.addEventListener("input", (e) => {
-    tipPercent = parseFloat(e.target.value) || 0;
+    // manual tip overrides %
+    tipPercent = null;
+
+    // remove button highlight
+    document.querySelectorAll(".tip-btn")
+      .forEach(b => b.classList.remove("active"));
+
     recalc();
   });
 }
+
+
 
 // Additional Charges logic
 const extraAmountInput = document.getElementById("extra-amount");
 const extraDiscountCheckbox = document.getElementById("extra-discount");
 
 if (extraAmountInput && extraDiscountCheckbox) {
+
+  // Amount input
   extraAmountInput.addEventListener("input", e => {
-    extraAmount = parseFloat(e.target.value) || 0;
+    extraAmount = parseFloat(e.target.value);
+    if (isNaN(extraAmount) || extraAmount < 0) {
+      extraAmount = 0;
+    }
     recalc();
   });
 
+  // Discount checkbox
   extraDiscountCheckbox.addEventListener("change", e => {
     isDiscount = e.target.checked;
 
-    extraAmountInput.disabled = isDiscount;
     if (isDiscount) {
+      // Disable & reset amount when discount is checked
       extraAmount = 0;
       extraAmountInput.value = "";
+      extraAmountInput.disabled = true;
+    } else {
+      // Re-enable amount input
+      extraAmountInput.disabled = false;
     }
 
     recalc();
   });
 }
 
-// Buttons
-document.getElementById("add-item-btn").onclick = addItem;
-document.getElementById("clear-btn").onclick = () => {
-  items = [];
-  tipPercent = 0;
-  extraAmount = 0;
-  isDiscount = false;
 
-  document.getElementById("items-container").innerHTML = "";
+// Update visibility of Additional Charges row for print
+function updateAdditionalChargesForPrint() {
+  const descEl = document.getElementById("extra-desc");
+  const amountEl = document.getElementById("extra-amount");
+  const discountEl = document.getElementById("extra-discount");
 
-  const tipInput = document.getElementById("tip-input");
-  if (tipInput) tipInput.value = "";
+  const sectionEl = document.getElementById("additional-charges-section");
+  const fieldsRow = document.getElementById("additional-charges-fields");
 
-  const extraInput = document.getElementById("extra-amount");
-  if (extraInput) extraInput.value = "";
+  if (!descEl || !amountEl || !discountEl || !sectionEl || !fieldsRow) return;
 
-  const discountBox = document.getElementById("extra-discount");
-  if (discountBox) discountBox.checked = false;
+  const isBlank =
+    !descEl.value.trim() &&
+    !amountEl.value.trim() &&
+    !discountEl.checked;
 
-  addItem();
+  // Always keep visible on screen (print-hidden does nothing on screen if CSS is correct)
+  if (isBlank) {
+    sectionEl.classList.add("print-hidden"); // hide entire section in PDF
+  } else {
+    sectionEl.classList.remove("print-hidden");
+  }
+}
+
+// Event listeners for updating Additional Charges visibility
+const descEl = document.getElementById("extra-desc");
+const amountEl = document.getElementById("extra-amount");
+const discountEl = document.getElementById("extra-discount");
+
+if (descEl) descEl.addEventListener("input", updateAdditionalChargesForPrint);
+if (amountEl) amountEl.addEventListener("input", updateAdditionalChargesForPrint);
+if (discountEl) discountEl.addEventListener("change", updateAdditionalChargesForPrint);
+
+// Update visibility of Discount in Additional Charges for print
+function updateDiscountVisibilityForPrint() {
+  const descEl = document.getElementById("extra-desc");
+  const discountCheckbox = document.getElementById("extra-discount");
+  const discountWrapper = document.getElementById("discount-print-wrapper");
+
+  if (!descEl || !discountCheckbox || !discountWrapper) return;
+  const hasDescription = descEl.value.trim().length > 0;
+  const isDiscountChecked = discountCheckbox.checked;
+
+  // Print rule:
+  // If description exists AND discount is NOT checked → hide discount in PDF
+  if (hasDescription && !isDiscountChecked) {
+    discountWrapper.classList.add("print-hidden");
+  } else {
+    discountWrapper.classList.remove("print-hidden");
+  }
+}
+// Event listeners for updating Discount visibility
+document.addEventListener("DOMContentLoaded", updateDiscountVisibilityForPrint);
+window.addEventListener("beforeprint", updateDiscountVisibilityForPrint);
+
+if (descEl) descEl.addEventListener("input", updateDiscountVisibilityForPrint);
+if (discountEl) discountEl.addEventListener("change", updateDiscountVisibilityForPrint);
+
+// Initialize the app on DOM load
+document.addEventListener("DOMContentLoaded", () => {
+
+
+  // ---- Invoice meta ----
+  initInvoice();
+
+  // ---- Buttons ----
+  const addItemBtn = document.getElementById("add-item-btn");
+  const clearBtn = document.getElementById("clear-btn");
+  const printBtn = document.getElementById("print-btn");
+
+  if (addItemBtn) {
+    addItemBtn.type = "button"; // prevent form submit
+    addItemBtn.addEventListener("click", addItem);
+  }
+
+  if (clearBtn) {
+    clearBtn.addEventListener("click", () => {
+      items = [];
+      tipPercent = 0;
+      extraAmount = 0;
+      isDiscount = false;
+
+      document.getElementById("items-container").innerHTML = "";
+
+      const tipInput = document.getElementById("tip-input");
+      if (tipInput) tipInput.value = "";
+
+      const extraInput = document.getElementById("extra-amount");
+      if (extraInput) extraInput.value = "";
+
+      const discountBox = document.getElementById("extra-discount");
+      if (discountBox) discountBox.checked = false;
+
+      recalc();
+    });
+  }
+
+  if (printBtn) {
+    printBtn.addEventListener("click", () => window.print());
+  }
+
+  // ---- Print visibility helpers ----
+  updateAdditionalChargesForPrint();
+  updateDiscountVisibilityForPrint();
+
+  // ---- Initial calculation ----
   recalc();
-};
-document.getElementById("print-btn").onclick = () => window.print();
+});
 
-// Initialize
-initInvoice();
-addItem(); // start with one item
-recalc();
 

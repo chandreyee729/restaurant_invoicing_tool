@@ -1,50 +1,369 @@
+/* ===========================
+   BASE
+   =========================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
-    box-sizing: border-box;
+  margin: 0;
+  font-family: "DM Sans", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+}
+
+/* Display font */
+.font-display {
+  font-family: "Playfair Display", serif;
+}
+
+/* Background gradient */
+.invoice-gradient {
+  background: radial-gradient(circle at top, rgba(40, 80, 140, 0.9), rgba(8, 15, 35, 0.98));
+  min-height: 100vh;
+}
+
+/* ===========================
+      CARD (GLASS)
+      =========================== */
+.card-glass {
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
+
+  /* SINGLE SOURCE OF ROUNDING */
+  border-radius: 28px;
+  overflow: hidden;
+  /* clips all inner sections to rounded corners */
+}
+
+/* IMPORTANT:
+      Do NOT let inner sections create their own rounding (causes seams). */
+.card-glass .bg-white,
+.card-glass .bg-slate-50,
+.card-glass .total-highlight {
+  border-radius: 0 !important;
+}
+
+/* Ensure the very last visible block inside the card also respects rounding via clipping */
+.card-glass>* {
+  margin: 0;
+  /* avoid tiny gaps showing page background */
+}
+
+/* ===========================
+      SMALL UI
+      =========================== */
+.email-phone-separator {
+  font-size: 14px;
+  color: #64748b;
+  line-height: 1;
+  margin: 0 2px;
+}
+
+/* ===========================
+      INPUTS
+      =========================== */
+.invoice-input {
+  width: 100%;
+  max-width: 100%;
+  display: block;
+
+  padding: 8px 12px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.25;
+  background: #fff;
+  outline: none;
+}
+
+.invoice-input:focus {
+  border-color: #cbd5e1;
+}
+
+textarea.invoice-input {
+  font-family: inherit;
+  min-height: 72px;
+}
+
+/* Small hint next to Additional Charges title */
+.charges-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 8px;
+}
+
+/* ===========================
+      TABLE (Items)
+      =========================== */
+table th {
+  padding: 10px 8px;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+table td {
+  padding: 10px 8px;
+  color: #111827;
+  vertical-align: middle;
+}
+
+#items-container input,
+#items-container select {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 6px 8px;
+  font-size: 14px;
+  background: #fff;
+}
+
+#items-container select {
+  cursor: pointer;
+}
+
+/* ===========================
+      BUTTONS
+      =========================== */
+.btn-primary {
+  background: linear-gradient(90deg, #ff4d6d, #ff7a59);
+  box-shadow: 0 10px 18px rgba(255, 77, 109, 0.25);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 22px rgba(255, 77, 109, 0.3);
+}
+
+.btn-secondary {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: #111827;
+  transition: transform 0.12s ease;
+}
+
+.btn-secondary:hover {
+  transform: translateY(-1px);
+}
+
+.tip-btn {
+  border: 1px solid #e5e7eb;
+  background: #ffffff;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.tip-btn.active {
+  background-color: #111827; /* dark */
+  color: white;
+  border-color: #111827;
+}
+#tip-amount-display::before {
+  content: "≈ ";
+  font-weight: 400;
+}
+
+/* ===========================
+      TOTALS (Screen)
+      =========================== */
+/* Flat start. No overlay. No top fade. No borders. No rounding. */
+.total-highlight {
+  background: linear-gradient(180deg, #0b2447, #0b3c6f);
+  margin: 0 !important;
+  padding: 24px;
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+/* If any border line appears between white and blue, remove it */
+.total-highlight,
+.total-highlight * {
+  outline: none;
+}
+
+/* ===========================
+      PRINT HIDE (ONLY FOR PRINT)
+      =========================== */
+/* Do NOT hide on screen */
+.no-print {
+  display: block !important;
+}
+/* ===========================
+      PRINT / PDF MODE
+      =========================== */
+@media print {
+  @page {
+    size: A4;
+    margin: 20mm 18mm 22mm 18mm;
   }
-  
-  .font-display { font-family: 'Playfair Display', serif; }
-  .font-body { font-family: 'DM Sans', sans-serif; }
-  
-  .invoice-gradient {
-    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+
+  html,
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #fff !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
-  
+
+  header {
+    display: none !important;
+  }
+
+  .p-4,
+  .md\:p-8 {
+    padding: 0 !important;
+  }
+
   .card-glass {
-    background: rgba(255,255,255,0.97);
+    background: white !important;
+    border: none !important;
+    box-shadow: none !important;
+    border-radius: 0 !important;
+    overflow: visible !important;
   }
-  
-  .btn-primary {
-    background: linear-gradient(135deg, #e94560, #ff6b6b);
-    transition: 0.3s;
+
+  .email-phone-separator {
+    color: #000 !important;
   }
-  
-  .btn-primary:hover { transform: translateY(-2px); }
-  
-  .btn-secondary {
-    border: 1px solid #cbd5e1;
+
+  .no-print,
+  #add-item-btn,
+  #clear-btn,
+  #print-btn {
+    display: none !important;
   }
-  
-  input, select {
-    border: 1px solid #e2e8f0;
-    border-radius: 0.5rem;
-    padding: 0.3rem 0.4rem;
+
+  /* Receiver + Invoice details on same horizontal line in PDF */
+  .invoice-meta-grid {
+    display: grid !important;
+    grid-template-columns: 55% 45% !important;
+    column-gap: 24px !important;
+    align-items: start !important;
   }
-  
-  table th, table td {
-    padding: 0.5rem;
+
+  .invoice-meta-grid h4 {
+    margin-top: 0 !important;
   }
-  
+
+  .invoice-meta-grid textarea {
+    min-height: auto !important;
+  }
+
+  /* Make inputs plain text in PDF */
+  input,
+  textarea {
+    border: none !important;
+    background: transparent !important;
+    box-shadow: none !important;
+    outline: none !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+  }
+
+  textarea {
+    resize: none !important;
+    overflow: hidden !important;
+    min-height: auto !important;
+  }
+
+  select {
+    border: none !important;
+    background: transparent !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  select::-ms-expand {
+    display: none !important;
+  }
+
+  .bg-slate-50 {
+    background: transparent !important;
+  }
+
+  .rounded-xl,
+  .rounded-3xl {
+    border-radius: 0 !important;
+  }
+
+  /* Totals in PDF should look like invoice text */
   .total-highlight {
-    background: linear-gradient(135deg, #1a1a2e, #16213e);
+    background: transparent !important;
+    color: #000 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin: 0 !important;
   }
-  
-  @media print {
-    .no-print { display: none !important; }
+
+  .total-highlight * {
+    color: #000 !important;
   }
-  
-  input:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
+
+  /* Keep Additional Charges fields in one row in PDF */
+  #additional-charges-fields {
+    font-weight: 600;
+    display: grid !important;
+    grid-template-columns: 58% 12% 30% !important;
+    column-gap: 10px !important;
+    align-items: end !important;
   }
-  
-  
+
+  /* Hide elements with .print-hidden ONLY in print */
+  .print-hidden {
+    display: none !important;
+  }
+
+  .charges-hint {
+    font-size: 10px !important;
+    color: #6b7280 !important;
+  }
+
+  a[href]:after {
+    content: "" !important;
+  }
+
+  #invoice-note,
+
+  /* === Shared layout for Transfer & Tax sections === */
+.transfer-section,
+.tax-section {
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+
+/* === Labels: same size + bold === */
+.transfer-section label,
+.tax-section label {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: block;
+}
+
+/* === Content text: aligned + consistent === */
+#transfer-details,
+#sender-tax-info {
+  font-size: 11px;
+  line-height: 1.4;
+  font-weight: 400; /* bold but readable */
+  white-space: pre-wrap !important;
+  overflow: visible !important;
+}
+
+/* Optional spacing before tax section */
+.tax-section {
+  margin-top: 16mm;
+}
+
+}
