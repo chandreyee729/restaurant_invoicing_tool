@@ -160,10 +160,12 @@ table td {
 }
 
 .tip-btn.active {
-  background-color: #111827; /* dark */
+  background-color: #111827;
+  /* dark */
   color: white;
   border-color: #111827;
 }
+
 #tip-amount-display::before {
   content: "≈ ";
   font-weight: 400;
@@ -194,6 +196,7 @@ table td {
 .no-print {
   display: block !important;
 }
+
 /* ===========================
       PRINT / PDF MODE
       =========================== */
@@ -336,34 +339,35 @@ table td {
   #invoice-note,
 
   /* === Shared layout for Transfer & Tax sections === */
-.transfer-section,
-.tax-section {
-  page-break-inside: avoid;
-  break-inside: avoid;
-}
+  .transfer-section,
+  .tax-section {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
 
-/* === Labels: same size + bold === */
-.transfer-section label,
-.tax-section label {
-  font-size: 13px;
-  font-weight: 700;
-  margin-bottom: 6px;
-  display: block;
-}
+  /* === Labels: same size + bold === */
+  .transfer-section label,
+  .tax-section label {
+    font-size: 13px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+  }
 
-/* === Content text: aligned + consistent === */
-#transfer-details,
-#sender-tax-info {
-  font-size: 11px;
-  line-height: 1.4;
-  font-weight: 400; /* bold but readable */
-  white-space: pre-wrap !important;
-  overflow: visible !important;
-}
+  /* === Content text: aligned + consistent === */
+  #transfer-details,
+  #sender-tax-info {
+    font-size: 11px;
+    line-height: 1.4;
+    font-weight: 400;
+    /* bold but readable */
+    white-space: pre-wrap !important;
+    overflow: visible !important;
+  }
 
-/* Optional spacing before tax section */
-.tax-section {
-  margin-top: 16mm;
-}
+  /* Optional spacing before tax section */
+  .tax-section {
+    margin-top: 16mm;
+  }
 
 }
