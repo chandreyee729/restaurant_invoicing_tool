@@ -1,3 +1,4 @@
+let currentLang = "en";
 const translations = {
   en: {
     // Header
@@ -6,7 +7,7 @@ const translations = {
 
     // New invoice header titles
     receiverTitle: "Receiver",
-    invoiceTitle: "Invoice",
+    invoiceTitle: "Invoice Details",
 
     // Invoice meta labels
     invoiceNumberLabel: "Invoice No.",
@@ -18,10 +19,18 @@ const translations = {
     item: "Item",
     type: "Type",
     qty: "Qty",
+    calculate: "Get Unit Price By",
     netUnit: "Net Unit Price (€)",
     tax: "Tax %",
     taxAmount: "Tax (€)",
     gross: "Gross Price (€)",
+
+    // Table Body
+    selectFood: "Food",
+    selectDrink: "Drink",
+    itemNamePlaceholder: "Item Name",
+    selectNet: "Net",
+    selectGross: "Gross",
 
     // Buttons / Sections
     addItem: "+ Add Item",
@@ -30,6 +39,7 @@ const translations = {
     extraHint: "This amount is automatically added to Grand Total",
 
     tipOptional: "Tip (Optional)",
+    noTipButton: "No Tip",
     clear: "Clear",
     print: "Print / PDF",
 
@@ -66,7 +76,7 @@ const translations = {
 
     // New invoice header titles
     receiverTitle: "Empfänger",
-    invoiceTitle: "Rechnung",
+    invoiceTitle: "Rechnungsdetails",
 
     // Invoice meta labels
     invoiceNumberLabel: "Rechnung - Nr.",
@@ -78,10 +88,18 @@ const translations = {
     item: "Artikel",
     type: "Typ",
     qty: "Menge",
+    calculate: "Einzelpreis berechnen nach",
     netUnit: "Netto Stückpreis (€)",
     tax: "MwSt. %",
     taxAmount: "MwSt. (€)",
     gross: "Bruttopreis (€)",
+
+    // Table Body
+    selectFood: "Speisen",
+    selectDrink: "Getränk",
+    itemNamePlaceholder: "Artikelname",
+    selectNet: "Netto",
+    selectGross: "Brutto",
 
     // Buttons / Sections
     addItem: "+ Artikel hinzufügen",
@@ -90,6 +108,7 @@ const translations = {
     extraHint: "Dieser Betrag wird automatisch zur Gesamtsumme addiert",
 
     tipOptional: "Trinkgeld (Optional)",
+    noTipButton: "Kein Trinkgeld",
     clear: "Zurücksetzen",
     print: "Drucken / PDF",
 
@@ -123,40 +142,43 @@ const translations = {
 /**
  * Translate text nodes and placeholders using data-i18n / data-i18n-placeholder attributes
  */
-function applyTranslations(lang) {
-  // TEXT translations: data-i18n
-  document.querySelectorAll("[data-i18n]").forEach((el) => {
-    const key = el.getAttribute("data-i18n");
-    if (translations[lang] && translations[lang][key]) {
-      el.textContent = translations[lang][key];
+
+function applyTranslations(root = document) {
+  if (!root || !root.querySelectorAll) return;
+
+  root.querySelectorAll("[data-i18n]").forEach(el => {
+    const key = el.dataset.i18n;
+    if (translations[currentLang]?.[key]) {
+      el.textContent = translations[currentLang][key];
     }
   });
 
-  // PLACEHOLDER translations: data-i18n-placeholder
-  document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
-    const key = el.getAttribute("data-i18n-placeholder");
-    if (translations[lang] && translations[lang][key]) {
-      el.setAttribute("placeholder", translations[lang][key]);
+  root.querySelectorAll("[data-i18n-placeholder]").forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (translations[currentLang]?.[key]) {
+      el.placeholder = translations[currentLang][key];
     }
   });
 }
 
-/**
- * Language switch handler
- */
-function setLanguage(lang) {
-  localStorage.setItem("invoice_lang", lang);
-  applyTranslations(lang);
-}
+//window.setLanguage = setLanguage;
+window.applyTranslations = applyTranslations;
+
 
 /**
  * Default language on load
  */
 document.addEventListener("DOMContentLoaded", () => {
   const savedLang = localStorage.getItem("invoice_lang") || "en";
-  applyTranslations(savedLang);
+  currentLang = savedLang;
 
-  // Also sync dropdown if present
-  const selector = document.querySelector("select[onchange*='setLanguage']");
-  if (selector) selector.value = savedLang;
+  document.documentElement.lang = savedLang;
+  applyTranslations(document);
+
+  const switcher = document.getElementById("language-switch");
+  if (switcher) switcher.value = savedLang;
 });
+
+// Expose to global scope
+window.applyTranslations = applyTranslations;
+window.translations = translations;

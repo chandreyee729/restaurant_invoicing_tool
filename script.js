@@ -1,16 +1,20 @@
-let currentLang = "en"; // default language
+//let currentLang = "en"; // default language
 let items = [];
 let idCounter = 0;
 let tipPercent = null;
 let extraAmount = 0;
 let isDiscount = false;
 
+applyTranslations(document);
 const languageSwitch = document.getElementById("language-switch");
 
 if (languageSwitch) {
   languageSwitch.addEventListener("change", e => {
     currentLang = e.target.value;
-    applyLanguage(currentLang);
+    localStorage.setItem("invoice_lang", currentLang);
+    document.documentElement.lang = currentLang;
+
+    applyTranslations(document);
     recalc();
   });
 }
@@ -78,21 +82,19 @@ function recalc() {
   const tipAmountEl = document.getElementById("tip-amount-display");
   if (tipAmountEl) {
     tipAmountEl.textContent = formatCurrency(tipAmount);
-  }
+  }     
 
+  const appliedExtra = isDiscount ? 0 : extraAmount;
+  const grandTotal = subtotal + tipAmount + appliedExtra;
 
-
-const appliedExtra = isDiscount ? 0 : extraAmount;
-const grandTotal = subtotal + tipAmount + appliedExtra;
-
-// Update totals in HTML
-document.getElementById("total-net-food").textContent = formatCurrency(totalNetFood);
-document.getElementById("total-tax-food").textContent = formatCurrency(totalTaxFood);
-document.getElementById("total-net-drink").textContent = formatCurrency(totalNetDrink);
-document.getElementById("total-tax-drink").textContent = formatCurrency(totalTaxDrink);
-document.getElementById("total-net").textContent = formatCurrency(totalNet);
-document.getElementById("total-tax").textContent = formatCurrency(totalTax);
-document.getElementById("grand-total").textContent = formatCurrency(grandTotal);
+  // Update totals in HTML
+  document.getElementById("total-net-food").textContent = formatCurrency(totalNetFood);
+  document.getElementById("total-tax-food").textContent = formatCurrency(totalTaxFood);
+  document.getElementById("total-net-drink").textContent = formatCurrency(totalNetDrink);
+  document.getElementById("total-tax-drink").textContent = formatCurrency(totalTaxDrink);
+  document.getElementById("total-net").textContent = formatCurrency(totalNet);
+  document.getElementById("total-tax").textContent = formatCurrency(totalTax);
+  document.getElementById("grand-total").textContent = formatCurrency(grandTotal);
 }
 
 // Add a new item row to the invoice
@@ -103,68 +105,172 @@ function addItem() {
     qty: 1,
     net: 0,
     type: "food",
-    tax: 7
+    tax: 7,
+    priceMode: "net" // net | gross
   };
   items.push(item);
 
   const row = document.createElement("tr");
+
+  // NOTE:
+  // - Net has an input always present (but may be disabled/hidden depending on mode)
+  // - Gross column contains BOTH: a text output span + a hidden input for gross entry
   row.innerHTML = `
-    <td><input placeholder="Item Name" class="item-name"></td>
+    <td class="item-cell">
+  <input placeholder="Item Name" data-i18n-placeholder="itemNamePlaceholder" class="item-name auto-expand-input print-source">
+   <span class="item-print print-target hidden"></span>
+</td>
     <td>
       <select class="item-type">
-        <option value="food">Food</option>
-        <option value="drink">Drink</option>
+        <option data-i18n="selectFood" value="food">Food</option>
+        <option data-i18n="selectDrink" value="drink">Drink</option>
       </select>
     </td>
-    <td><input type="number" value="1" class="qty w-16"></td>
-    <td><input type="number" value="0.00" class="net w-24"></td>
+
+      </select>
+    </td>
+
+    <td><input type="number" value="1" min="1" class="qty w-16"></td>
+
+    <td class="no-print">
+      <select class="price-mode text-xs border rounded px-2 py-1">
+        <option data-i18n-placeholder="selectNet" value="net">Net</option>
+        <option data-i18n-placeholder="selectGross" value="gross">Gross</option>
+      </select>
+    </td>
+
+    <!-- Net Unit Price -->
+    <td>
+      <input type="number" value="0.00" min="0" step="0.01" class="net-input w-24">
+    </td>
+
     <td class="tax text-center">7%</td>
     <td class="taxValue">€0.00</td>
-    <td class="gross">€0.00</td>
-    <td class="no-print"><button class="remove-btn text-red-500">✕</button></td>
+
+    <!-- Gross Price -->
+    <td class="gross-cell">
+      <span class="gross-text">€0.00</span>
+      <input type="number" value="0.00" min="0" step="0.01" class="gross-input w-24 hidden">
+    </td>
+
+    <td class="no-print">
+      <button type="button" class="remove-btn text-red-500">✕</button>
+    </td>
   `;
 
-  const [nameInput, typeSelect, qtyInput, netInput] = row.querySelectorAll("input, select");
+  // Safer selectors (no destructuring)
+  const nameInput = row.querySelector(".item-name");
+  const typeSelect = row.querySelector(".item-type");
+  const qtyInput = row.querySelector(".qty");
+  const priceModeSelect = row.querySelector(".price-mode");
+
+  const netInput = row.querySelector(".net-input");
+
   const taxCell = row.querySelector(".tax");
   const taxValueCell = row.querySelector(".taxValue");
-  const grossCell = row.querySelector(".gross");
-  const grossInput = row.querySelector(".gross");
 
+  const grossText = row.querySelector(".gross-text");
+  const grossInput = row.querySelector(".gross-input");
 
-  // Update item and totals
-  function grossFromNet() {
+  function syncPriceModeUI() {
+    const mode = priceModeSelect.value;
+
+    if (mode === "gross") {
+      // gross is editable, net is derived
+      grossInput.classList.remove("hidden");
+      grossText.classList.add("hidden");
+
+      netInput.disabled = true;
+      netInput.classList.add("opacity-60");
+    } else {
+      // net is editable, gross is derived
+      grossInput.classList.add("hidden");
+      grossText.classList.remove("hidden");
+
+      netInput.disabled = false;
+      netInput.classList.remove("opacity-60");
+    }
+  }
+
+  function update() {
     item.name = nameInput.value;
     item.qty = +qtyInput.value || 1;
-    item.net = +netInput.value || 0;
+
     item.type = typeSelect.value;
     item.tax = taxRateByType(item.type);
 
-    const taxAmount = item.qty * item.net * item.tax / 100;
-    const gross = item.qty * item.net + taxAmount;
+    item.priceMode = priceModeSelect.value;
+
+    const taxRate = item.tax / 100;
+
+    // Ensure UI matches mode (so gross input actually appears)
+    syncPriceModeUI();
+
+    let netUnit = 0;
+    let grossUnit = 0;
+
+    if (item.priceMode === "gross") {
+      // USER enters GROSS UNIT
+      grossUnit = +grossInput.value || 0;
+
+      // derive NET UNIT
+      netUnit = grossUnit / (1 + taxRate);
+
+      // sync net unit display (read-only)
+      netInput.value = netUnit.toFixed(2);
+      item.net = netUnit;
+    } else {
+      // USER enters NET UNIT
+      netUnit = +netInput.value || 0;
+      item.net = netUnit;
+
+      // derive GROSS UNIT
+      grossUnit = netUnit * (1 + taxRate);
+
+      // keep gross unit display in sync
+      grossInput.value = grossUnit.toFixed(2);
+    }
+
+    const taxAmount = netUnit * item.qty * taxRate;
+    const grossTotal = grossUnit * item.qty;
 
     taxCell.textContent = item.tax + "%";
     taxValueCell.textContent = formatCurrency(taxAmount);
-    grossCell.textContent = formatCurrency(gross);
+    grossText.textContent = formatCurrency(grossTotal);
+
     recalc();
   }
 
-  // Event listeners
-  nameInput.addEventListener("input", grossFromNet);
-  qtyInput.addEventListener("input", grossFromNet);
-  netInput.addEventListener("input", grossFromNet);
-  typeSelect.addEventListener("change", grossFromNet);
+  // Events
+  nameInput.addEventListener("input", update);
+  qtyInput.addEventListener("input", update);
 
-  // Remove button
+  typeSelect.addEventListener("change", update);
+
+  priceModeSelect.addEventListener("change", () => {
+    // when switching modes, keep values consistent and then recalc
+    update();
+  });
+
+  netInput.addEventListener("input", update);
+  grossInput.addEventListener("input", update);
+
   row.querySelector(".remove-btn").onclick = () => {
     items = items.filter(i => i.id !== item.id);
     row.remove();
     recalc();
   };
+
   document.getElementById("items-container").appendChild(row);
-  grossFromNet();
+  if (window.applyTranslations) {
+    window.applyTranslations(row);
+  }
+  // Initialize UI + totals
+  syncPriceModeUI();
+  update();
 }
 
-// Tip buttons
+// Tip buttons 
 document.querySelectorAll(".tip-btn").forEach(btn => {
   btn.addEventListener("click", () => {
     // set percentage
@@ -174,7 +280,7 @@ document.querySelectorAll(".tip-btn").forEach(btn => {
     const tipInput = document.getElementById("tip-input");
     if (tipInput) tipInput.value = "";
 
-    // highlight active button
+    // remove highlight active button and set current
     document.querySelectorAll(".tip-btn")
       .forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
@@ -197,9 +303,23 @@ if (tipInput) {
     recalc();
   });
 }
+// No Tip button Listener
+document.addEventListener("DOMContentLoaded", () => {
+  const noTipBtn = document.getElementById("no-tip-btn");
+  if (!noTipBtn) return;
 
+  noTipBtn.addEventListener("click", () => {
+    tipPercent = 0;
 
+    const tipInput = document.getElementById("tip-input");
+    if (tipInput) tipInput.value = "";
 
+    document.querySelectorAll(".tip-btn").forEach(b => b.classList.remove("tip-btn-active"));
+    noTipBtn.classList.add("tip-btn-active");
+
+    recalc();
+  });
+});
 // Additional Charges logic
 const extraAmountInput = document.getElementById("extra-amount");
 const extraDiscountCheckbox = document.getElementById("extra-discount");
@@ -277,6 +397,7 @@ function updateDiscountVisibilityForPrint() {
   const hasDescription = descEl.value.trim().length > 0;
   const isDiscountChecked = discountCheckbox.checked;
 
+
   // Print rule:
   // If description exists AND discount is NOT checked → hide discount in PDF
   if (hasDescription && !isDiscountChecked) {
@@ -334,6 +455,26 @@ document.addEventListener("DOMContentLoaded", () => {
   if (printBtn) {
     printBtn.addEventListener("click", () => window.print());
   }
+  
+  // ---- Trim reason input before print ----
+  window.addEventListener("beforeprint", () => {
+    const input = document.getElementById("reason-input");
+    const print = document.getElementById("reason-print");
+
+    if (input && print) {
+      print.textContent = input.value;
+    }
+  });
+ // ---- Sync item names for print ----
+  window.addEventListener("beforeprint", () => {
+    document.querySelectorAll(".item-cell").forEach(cell => {
+      const input = cell.querySelector("input");
+      const print = cell.querySelector(".item-print");
+      if (input && print) {
+        print.textContent = input.value || "";
+      }
+    });
+  });
 
   // ---- Print visibility helpers ----
   updateAdditionalChargesForPrint();
