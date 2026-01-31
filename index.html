@@ -21,8 +21,8 @@
     <!-- HEADER -->
     <header class="relative text-center mb-8">
       <div class="absolute top-4 right-4 no-print">
-        <select title="Select Language" onchange="setLanguage(this.value)"
-          class="bg-white text-slate-800 text-sm px-3 py-1.5 rounded-lg shadow-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-300">
+        <select id="language-switch" title="Select Language"
+          class="bg-white text-slate-800 text-sm px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
           <option value="en">EN</option>
           <option value="de">DE</option>
         </select>
@@ -69,7 +69,7 @@
         </div>
 
         <!-- Receiver (Left) + Invoice Meta (Right) And Same Row -->
-        <div class="invoice-meta-grid mt-8 grid grid-cols-1 md:grid-cols-[1.2fr_1fr] gap-10 items-start">
+        <div class="invoice-meta-grid mt-8 grid grid-cols-1 md:grid-cols-[400px_1fr] gap-10 items-start">
 
           <!-- Receiver (LEFT)-->
           <div>
@@ -87,11 +87,9 @@
           <!-- Invoice Meta -->
           <div class="md:text-right">
             <h4 class="text-base font-semibold text-slate-900 mb-2" data-i18n="invoiceTitle">
-              Invoice
+              Invoice Details
             </h4>
-
             <div class="space-y-2">
-
               <div class="grid grid-cols-[160px_1fr] gap-3 items-center">
                 <span class="text-sm text-slate-600 font-medium" data-i18n="invoiceNumberLabel">Invoice No.
                 </span>
@@ -105,21 +103,21 @@
                 <input id="invoice-date-input" type="text" placeholder="DD.MM.YYYY" class="invoice-input text-right" />
               </div>
 
-              <div class="grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-3 items-center">
+              <div class="grid grid-cols-[160px_1fr] gap-3 items-center">
                 <span class="text-sm text-slate-600 font-medium" data-i18n="serviceDateLabel">
                   Service Date
                 </span>
                 <input id="service-date-input" type="text" placeholder="DD.MM.YYYY" class="invoice-input text-right" />
               </div>
 
-              <div class="grid grid-cols-[140px_1fr] md:grid-cols-[180px_1fr] gap-3 items-center">
+              <div class="grid grid-cols-[160px_1fr] gap-3 items-center">
                 <span class="text-sm text-slate-600 font-medium" data-i18n="reasonLabel">
                   Reason
                 </span>
                 <input id="reason-input" type="text" placeholder="Christmas Celebration"
                   class="invoice-input text-right" />
+                <span id="reason-print" class="hidden"></span>
               </div>
-
             </div>
           </div>
 
@@ -131,9 +129,10 @@
         <table class="w-full text-sm border-collapse">
           <thead>
             <tr class="text-left border-b">
-              <th data-i18n="item">Item</th>
+              <th class="item-cell" data-i18n="item">Item</th>
               <th data-i18n="type">Type</th>
               <th data-i18n="qty">Qty</th>
+              <th class="no-print" data-i18n="calculate">Get Unit Price By</th>
               <th data-i18n="netUnit">Net Unit Price (€)</th>
               <th data-i18n="tax">Tax %</th>
               <th data-i18n="taxAmount">Tax (€)</th>
@@ -153,7 +152,7 @@
         <div id="additional-charges-section">
 
           <div class="flex items-baseline gap-2 mb-3">
-            <h3 class="font-display text-lg mt-6" data-i18n="additionalCharges" >
+            <h3 class="font-display text-lg mt-6" data-i18n="additionalCharges">
               Additional Charges
             </h3>
 
@@ -196,7 +195,7 @@
           </div>
         </div>
 
-        <!-- Tip Amount -->        
+        <!-- Tip Amount -->
         <h4 class="font-semibold text-sm text-slate-600 mb-2 mt-4" data-i18n="tipOptional">
           Tip (Optional)
         </h4>
@@ -206,25 +205,19 @@
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="10">10%</button>
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="15">15%</button>
           <button class="tip-btn btn-secondary px-3 py-1.5 rounded-lg" data-tip="20">20%</button>
-        
-          <input
-            type="number"
-            id="tip-input"
-            min="0.00"
-            placeholder="Enter Custom Tip Amount"
-            data-i18n-placeholder="enterTip"
-            class="w-28 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm
-                   focus:outline-none focus:ring-2 focus:ring-slate-200 w-[220px]"
-          />
-        
+          <button data-i18n="noTipButton"
+            class="no-tip-btn btn-secondary px-3 py-1.5 rounded-lg whitespace-nowrap">No Tip</button>
+
+
+          <input type="number" id="tip-input" min="0.00" placeholder="Enter Custom Tip Amount"
+            data-i18n-placeholder="enterTip" class="w-28 px-3 py-2 rounded-lg border border-slate-200 bg-white text-sm
+                   focus:outline-none focus:ring-2 focus:ring-slate-200 w-[220px]" />
+
           <!-- ✅ Tip amount on the SAME line -->
-          <span
-            id="tip-amount-display"
-            class="ml-56 text-sm font-semibold text-slate-700 gap-3 whitespace-nowrap"
-          >
-             0.00 (€)
+          <span id="tip-amount-display" class="ml-56 text-sm font-semibold text-slate-700 gap-3 whitespace-nowrap">
+            0.00 (€)
           </span>
-        
+
         </div>
       </div>
 
@@ -273,7 +266,7 @@
       <!-- Invoice Notes & Legal Info -->
       <div class="bg-slate-50 p-6 space-y-5">
 
-        <!-- Note --> 
+        <!-- Note -->
         <div>
           <label data-i18n="noteLabel" class="block text-sm font-medium text-slate-700 mb-4">
             Note

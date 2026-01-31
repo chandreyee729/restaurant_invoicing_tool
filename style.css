@@ -28,8 +28,8 @@ body {
       =========================== */
 .card-glass {
   background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.25);
 
@@ -89,12 +89,11 @@ textarea.invoice-input {
   min-height: 72px;
 }
 
-/* Small hint next to Additional Charges title */
-.charges-hint {
-  font-size: 12px;
-  font-weight: 400;
-  color: #64748b;
-  margin-left: 8px;
+.reason-textarea {
+  resize: none;
+  overflow: hidden;
+  min-height: 42px;
+  line-height: 1.4;
 }
 
 /* ===========================
@@ -119,6 +118,12 @@ table td {
   padding: 6px 8px;
   font-size: 14px;
   background: #fff;
+}
+
+.auto-expand-input {
+  min-width: 280px;
+  width: 100%;
+  white-space: nowrap;
 }
 
 #items-container select {
@@ -150,6 +155,14 @@ table td {
   transform: translateY(-1px);
 }
 
+/* Small hint next to Additional Charges title */
+.charges-hint {
+  font-size: 12px;
+  font-weight: 400;
+  color: #64748b;
+  margin-left: 8px;
+}
+
 .tip-btn {
   border: 1px solid #e5e7eb;
   background: #ffffff;
@@ -160,16 +173,22 @@ table td {
 }
 
 .tip-btn.active {
-  background-color: #111827;
-  /* dark */
-  color: white;
-  border-color: #111827;
+  background: transparent;
+  color: #000;
+  border: 2px solid #000;
+}
+
+.no-tip-btn.active {
+  background: transparent;
+  color: #000;
+  border: 2px solid #000;
 }
 
 #tip-amount-display::before {
   content: "≈ ";
   font-weight: 400;
 }
+
 
 /* ===========================
       TOTALS (Screen)
@@ -189,6 +208,7 @@ table td {
   outline: none;
 }
 
+
 /* ===========================
       PRINT HIDE (ONLY FOR PRINT)
       =========================== */
@@ -203,11 +223,12 @@ table td {
 @media print {
   @page {
     size: A4;
-    margin: 20mm 18mm 22mm 18mm;
+    margin: 12mm;
   }
 
   html,
   body {
+    zoom: 0.85;
     margin: 0 !important;
     padding: 0 !important;
     background: #fff !important;
@@ -236,7 +257,10 @@ table td {
     color: #000 !important;
   }
 
-  .no-print,
+  .no-print {
+    display: none !important;
+  }
+
   #add-item-btn,
   #clear-btn,
   #print-btn {
@@ -244,6 +268,11 @@ table td {
   }
 
   /* Receiver + Invoice details on same horizontal line in PDF */
+  .invoice-meta-grid .grid {
+    display: grid !important;
+    align-items: start !important;
+  }
+
   .invoice-meta-grid {
     display: grid !important;
     grid-template-columns: 55% 45% !important;
@@ -259,6 +288,20 @@ table td {
     min-height: auto !important;
   }
 
+  #reason-input {
+    display: none !important;
+  }
+
+  #reason-print {
+    display: block !important;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    text-align: left;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
   /* Make inputs plain text in PDF */
   input,
   textarea {
@@ -270,18 +313,74 @@ table td {
     border-radius: 0 !important;
   }
 
+  table {
+    width: 100%;
+    table-layout: fixed !important;
+  }
+
+  /* Hide editable inputs in Item column, show print-only spans */
+  .print-source {
+    display: none !important;
+  }
+
+  /* Show printable text */
+  .print-target {
+    display: block !important;
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Allow wrapping ONLY in Item column */
+  th.item-cell,
+  td.item-cell {
+    white-space: normal !important;
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  /* Keep other columns tight */
+  th:not(.item-cell),
+  td:not(.item-cell) {
+    white-space: nowrap !important;
+  }
+
+  th,
+  td {
+    white-space: nowrap;
+    font-size: 11px;
+  }
+
+  /* Reduce padding so columns fit */
+  th,
+  td {
+    padding: 6px 8px;
+  }
+
   textarea {
     resize: none !important;
     overflow: hidden !important;
     min-height: auto !important;
   }
 
+  .col-tax-percent {
+    width: 60px;
+  }
+
+  .col-tax-amount {
+    width: 80px;
+  }
+
+  .col-gross {
+    width: 90px;
+  }
+
   select {
     border: none !important;
     background: transparent !important;
-    appearance: none !important;
-    -webkit-appearance: none !important;
     -moz-appearance: none !important;
+    -webkit-appearance: none !important;
+    appearance: none !important;
     padding: 0 !important;
     box-shadow: none !important;
     outline: none !important;
@@ -363,6 +462,12 @@ table td {
     /* bold but readable */
     white-space: pre-wrap !important;
     overflow: visible !important;
+  }
+
+
+  /* Hide section if empty */
+  .hide-if-empty-print {
+    display: none !important;
   }
 
   /* Optional spacing before tax section */
