@@ -89,7 +89,7 @@ const translations = {
     type: "Typ",
     qty: "Menge",
     calculate: "Einzelpreis berechnen nach",
-    netUnit: "Netto Stückpreis (€)",
+    netUnit: "Nettopreis (€)",
     tax: "MwSt. %",
     taxAmount: "MwSt. (€)",
     gross: "Bruttopreis (€)",

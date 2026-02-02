@@ -294,12 +294,12 @@ table td {
 
   #reason-print {
     display: block !important;
-    white-space: normal;
-    word-break: break-word;
-    overflow-wrap: anywhere;
-    text-align: left;
-    font-size: 14px;
-    line-height: 1.4;
+  white-space: normal !important;
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  text-align: right !important;
+  font-size: 14px;
+  line-height: 1.4;
   }
 
   /* Make inputs plain text in PDF */
@@ -314,9 +314,16 @@ table td {
   }
 
   table {
+    table-layout: fixed;
     width: 100%;
-    table-layout: fixed !important;
   }
+
+  .col-item { width: 35%; }
+  .col-qty,
+  .col-tax-rate { text-align: center; }
+
+  .col-tax,
+  .col-gross { text-align: right; }
 
   /* Hide editable inputs in Item column, show print-only spans */
   .print-source {
@@ -345,10 +352,13 @@ table td {
     white-space: nowrap !important;
   }
 
-  th,
+  th {
+    font-size: 14.5px !important;
+    font-weight: 700 !important;
+  }
+  
   td {
-    white-space: nowrap;
-    font-size: 11px;
+    font-size: 12px !important;
   }
 
   /* Reduce padding so columns fit */
@@ -362,9 +372,12 @@ table td {
     overflow: hidden !important;
     min-height: auto !important;
   }
-
+  .col-tax-percent,
+  td.tax {
+    text-align: center !important;
+  }
   .col-tax-percent {
-    width: 60px;
+    width: 52px !important;
   }
 
   .col-tax-amount {
@@ -447,7 +460,7 @@ table td {
   /* === Labels: same size + bold === */
   .transfer-section label,
   .tax-section label {
-    font-size: 13px;
+    font-size: 14.5px;
     font-weight: 700;
     margin-bottom: 6px;
     display: block;
@@ -456,9 +469,10 @@ table td {
   /* === Content text: aligned + consistent === */
   #transfer-details,
   #sender-tax-info {
-    font-size: 11px;
-    line-height: 1.4;
-    font-weight: 400;
+      font-size: 14.5px !important;
+      line-height: 1.5 !important;
+      font-weight: 500 !important;
+  
     /* bold but readable */
     white-space: pre-wrap !important;
     overflow: visible !important;

@@ -141,7 +141,8 @@ function addItem() {
 
     <!-- Net Unit Price -->
     <td>
-      <input type="number" value="0.00" min="0" step="0.01" class="net-input w-24">
+      <input type="number" value="0.00" min="0" step="0.001" class="net-input w-24 print-source">
+        <span class="net-print print-target hidden"></span>
     </td>
 
     <td class="tax text-center">7%</td>
@@ -150,7 +151,8 @@ function addItem() {
     <!-- Gross Price -->
     <td class="gross-cell">
       <span class="gross-text">€0.00</span>
-      <input type="number" value="0.00" min="0" step="0.01" class="gross-input w-24 hidden">
+      <input type="number" value="0.00" min="0" step="0.001" class="gross-input w-24 hidden print-source">
+        <span class="gross-print print-target hidden"></span>
     </td>
 
     <td class="no-print">
@@ -192,6 +194,7 @@ function addItem() {
     }
   }
 
+  // Update item and recalc totals 
   function update() {
     item.name = nameInput.value;
     item.qty = +qtyInput.value || 1;
@@ -217,7 +220,7 @@ function addItem() {
       netUnit = grossUnit / (1 + taxRate);
 
       // sync net unit display (read-only)
-      netInput.value = netUnit.toFixed(2);
+      netInput.value = netUnit.toFixed(3);
       item.net = netUnit;
     } else {
       // USER enters NET UNIT
@@ -350,6 +353,19 @@ if (extraAmountInput && extraDiscountCheckbox) {
     }
 
     recalc();
+  });
+}
+// Sync net input values to print spans before print
+window.addEventListener("beforeprint", syncPrintValues);
+function syncPrintValues() {
+  document.querySelectorAll(".net-input").forEach(input => {
+    const printSpan = input.closest("td").querySelector(".net-print");
+    if (!printSpan) return;
+
+    const value = parseFloat(input.value);
+    printSpan.textContent = isNaN(value)
+      ? ""
+      : value.toFixed(2).replace(".", ",") + " €";
   });
 }
 
