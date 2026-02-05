@@ -44,6 +44,10 @@ function taxRateByType(type) {
   return type === "drink" ? 19 : 7;
 }
 
+function round2(value) {
+  return Math.round(value * 100) / 100;
+}
+
 // Recalculate totals
 function recalc() {
   let totalNetFood = 0;
@@ -57,16 +61,16 @@ function recalc() {
     const gross = i.qty * i.net + taxAmount;
 
     if (i.type === "food") {
-      totalNetFood += i.qty * i.net;
+      totalNetFood += round2(i.qty * i.net);
       totalTaxFood += taxAmount;
     } else {
-      totalNetDrink += i.qty * i.net;
+      totalNetDrink += round2(i.qty * i.net);
       totalTaxDrink += taxAmount;
     }
   });
-  const totalNet = totalNetFood + totalNetDrink;
-  const totalTax = totalTaxFood + totalTaxDrink;
-  const subtotal = totalNet + totalTax;
+  const totalNet = round2(totalNetFood + totalNetDrink);
+  const totalTax = round2(totalTaxFood + totalTaxDrink);
+  const subtotal = round2(totalNet + totalTax);
 
   // TIP calculation
   let tipAmount = 0;
@@ -85,7 +89,7 @@ function recalc() {
   }     
 
   const appliedExtra = isDiscount ? 0 : extraAmount;
-  const grandTotal = subtotal + tipAmount + appliedExtra;
+  const grandTotal = round2(subtotal + tipAmount + appliedExtra);
 
   // Update totals in HTML
   document.getElementById("total-net-food").textContent = formatCurrency(totalNetFood);
